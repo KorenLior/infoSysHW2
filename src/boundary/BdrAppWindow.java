@@ -9,9 +9,9 @@ public class BdrAppWindow {
 	private JFrame frame;
 
 	/**
-	 * Launch the application. Test
+	 * Launch the application. Test111
 	 */
-	public static void main(String[] args) {Testfdfg
+	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
