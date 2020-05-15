@@ -15,10 +15,16 @@ import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormSpecs;
 import com.jgoodies.forms.layout.RowSpec;
 
+import control.CtrlContactElector;
 import control.CtrlElector;
 
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import javax.swing.AbstractAction;
+import java.awt.event.ActionEvent;
+import java.sql.Time;
+
+import javax.swing.Action;
 
 public class BdrContactElector {
 
@@ -30,7 +36,17 @@ public class BdrContactElector {
 	private final ButtonGroup rbgRide = new ButtonGroup();
 	private JTextField txtRideFrom;
 	private JTextField txtRideUntil;
-
+	private final Action actionSubmit = new SwingSubmitAction();
+	private boolean answer = false;
+	private boolean needRide = false;
+	private int planToVote = 3;
+	private int supportParty = 3;
+	private int intrestedInClass = 3;
+	private Time pickupFrom, pickupTo;
+	private int electorId, employeeId;
+	private final Action actionAnswerY = new SwingAction();
+	private final Action actionAnswerN = new SwingAction_1();
+	private final Action actionVoteY = new SwingAction_2();
 	/**
 	 * Launch the application.
 	 */
@@ -62,13 +78,15 @@ public class BdrContactElector {
 		String name = ctrlEL.getElectorName();
 		Integer phone = ctrlEL.getElectorPhone();
 		frame = new JFrame();
-		frame.setBounds(100, 100, 413, 379);
+		frame.setBounds(100, 100, 421, 376);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JRadioButton rbAnswerY = new JRadioButton("yes");
+		rbAnswerY.setAction(actionAnswerY);
 		rbgAnswer.add(rbAnswerY);
 		
 		JRadioButton rbAnswerN = new JRadioButton("no");
+		rbAnswerN.setAction(actionAnswerN);
 		rbAnswerN.setSelected(true);
 		rbgAnswer.add(rbAnswerN);
 		
@@ -76,33 +94,34 @@ public class BdrContactElector {
 		
 		JLabel lblVoting = new JLabel("will vote:");
 		
-		JRadioButton rbAnswerN_1 = new JRadioButton("no");
-		rbgWillVote.add(rbAnswerN_1);
-		rbAnswerN_1.setSelected(true);
+		JRadioButton rbrbWillVoteN = new JRadioButton("no");
+		rbgWillVote.add(rbrbWillVoteN);
+		rbrbWillVoteN.setSelected(true);
 		
-		JRadioButton rbAnswerY_1 = new JRadioButton("yes");
-		rbgWillVote.add(rbAnswerY_1);
+		JRadioButton rbWillVoteY = new JRadioButton("yes");
+		rbWillVoteY.setAction(actionVoteY);
+		rbgWillVote.add(rbWillVoteY);
 		
-		JRadioButton rbAnswerU_1 = new JRadioButton("undecided");
-		rbgWillVote.add(rbAnswerU_1);
-		rbAnswerU_1.setSelected(true);
+		JRadioButton rbrbWillVoteU = new JRadioButton("undecided");
+		rbgWillVote.add(rbrbWillVoteU);
+		rbrbWillVoteU.setSelected(true);
 		
 		JLabel lblSupportsParty = new JLabel("supports party:");
 		
-		JRadioButton rbAnswerU_1_1 = new JRadioButton("undecided");
-		rbgSupportParty.add(rbAnswerU_1_1);
-		rbAnswerU_1_1.setSelected(true);
+		JRadioButton rbSupportU = new JRadioButton("undecided");
+		rbgSupportParty.add(rbSupportU);
+		rbSupportU.setSelected(true);
 		
-		JRadioButton rbAnswerY_1_1 = new JRadioButton("yes");
-		rbgSupportParty.add(rbAnswerY_1_1);
+		JRadioButton rbSupportY = new JRadioButton("yes");
+		rbgSupportParty.add(rbSupportY);
 		
-		JRadioButton rbAnswerN_1_1 = new JRadioButton("no");
-		rbgSupportParty.add(rbAnswerN_1_1);
+		JRadioButton rbSupportN = new JRadioButton("no");
+		rbgSupportParty.add(rbSupportN);
 		
 		JLabel lblNeedRide = new JLabel("need a ride?");
 		
-		JRadioButton rbAnswerY_2 = new JRadioButton("yes");
-		rbgRide.add(rbAnswerY_2);
+		JRadioButton rbRideY = new JRadioButton("yes");
+		rbgRide.add(rbRideY);
 		
 		txtRideFrom = new JTextField();
 		txtRideFrom.setColumns(10);
@@ -115,12 +134,13 @@ public class BdrContactElector {
 		JLabel lblRideEnd = new JLabel("Until:");
 		
 		JButton btnSubmit = new JButton("Submit");
+		btnSubmit.setAction(actionSubmit);
 		
 		JButton btnCancel = new JButton("Cancel");
 		
-		JRadioButton rbAnswerN_2 = new JRadioButton("no");
-		rbgRide.add(rbAnswerN_2);
-		rbAnswerN_2.setSelected(true);
+		JRadioButton rbRideN = new JRadioButton("no");
+		rbgRide.add(rbRideN);
+		rbRideN.setSelected(true);
 		
 		JLabel lblElectorName = new JLabel(name);
 		
@@ -150,8 +170,8 @@ public class BdrContactElector {
 							.addComponent(lblNeedRide, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(65)
-							.addComponent(rbAnswerY_2)
-							.addComponent(rbAnswerN_2, GroupLayout.PREFERRED_SIZE, 118, GroupLayout.PREFERRED_SIZE))
+							.addComponent(rbRideY)
+							.addComponent(rbRideN, GroupLayout.PREFERRED_SIZE, 118, GroupLayout.PREFERRED_SIZE))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(11)
 							.addComponent(lblRideStart, GroupLayout.PREFERRED_SIZE, 49, GroupLayout.PREFERRED_SIZE)
@@ -166,17 +186,17 @@ public class BdrContactElector {
 							.addGap(65)
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
 								.addGroup(groupLayout.createSequentialGroup()
-									.addComponent(rbAnswerY_1_1)
+									.addComponent(rbSupportY)
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(rbAnswerN_1_1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+									.addComponent(rbSupportN, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 								.addGroup(groupLayout.createSequentialGroup()
-									.addComponent(rbAnswerY_1)
+									.addComponent(rbWillVoteY)
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(rbAnswerN_1)))
+									.addComponent(rbrbWillVoteN)))
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addComponent(rbAnswerU_1_1)
-								.addComponent(rbAnswerU_1)))
+								.addComponent(rbSupportU)
+								.addComponent(rbrbWillVoteU)))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(240)
 							.addComponent(btnSubmit)
@@ -212,24 +232,24 @@ public class BdrContactElector {
 					.addGap(6)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(rbAnswerY_1)
+							.addComponent(rbWillVoteY)
 							.addGap(5)
 							.addComponent(lblSupportsParty))
 						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-							.addComponent(rbAnswerN_1)
-							.addComponent(rbAnswerU_1)))
+							.addComponent(rbrbWillVoteN)
+							.addComponent(rbrbWillVoteU)))
 					.addGap(6)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(rbAnswerY_1_1)
+						.addComponent(rbSupportY)
 						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-							.addComponent(rbAnswerN_1_1)
-							.addComponent(rbAnswerU_1_1)))
+							.addComponent(rbSupportN)
+							.addComponent(rbSupportU)))
 					.addGap(3)
 					.addComponent(lblNeedRide)
 					.addGap(3)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(rbAnswerY_2)
-						.addComponent(rbAnswerN_2))
+						.addComponent(rbRideY)
+						.addComponent(rbRideN))
 					.addGap(6)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
@@ -249,5 +269,38 @@ public class BdrContactElector {
 					.addGap(163))
 		);
 		frame.getContentPane().setLayout(groupLayout);
+	}
+	private class SwingSubmitAction extends AbstractAction {
+		public SwingSubmitAction() {
+			putValue(NAME, "SwingAction");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+		public void actionPerformed(ActionEvent ae) {
+			new CtrlContactElector();
+		}
+	}
+	private class SwingAction extends AbstractAction {
+		public SwingAction() {
+			putValue(NAME, "SwingAction");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+		public void actionPerformed(ActionEvent e) {
+		}
+	}
+	private class SwingAction_1 extends AbstractAction {
+		public SwingAction_1() {
+			putValue(NAME, "SwingAction_1");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+		public void actionPerformed(ActionEvent e) {
+		}
+	}
+	private class SwingAction_2 extends AbstractAction {
+		public SwingAction_2() {
+			putValue(NAME, "SwingAction_2");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+		public void actionPerformed(ActionEvent e) {
+		}
 	}
 }
